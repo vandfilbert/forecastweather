@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="icon" type="image/png" href="{{ logo_filename }}" />
+	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+	<title>{{ title }}</title>
+	</head>
+	<body style="font-family: SF Pro Display">
+		<header>
+			<nav class="navbar navbar-expand-lg navbar-light fixed-top" style="background-color:#34b1eb;">
+				<button class="navbar-toggler border-transparent justify-content-center" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<img src="{{ logo_filename }}" style="width:12%;">
+				</button>
+
+				<div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+					<ul class="navbar-nav mr-auto">
+						<a class="navbar-brand" href="{{url_for('index')}}">
+							<img src="{{ logo_filename }}" style="width:4%;">
+							Forecast Weather
+						</a>
+					</ul>
+					<ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+						<li class="nav-item">
+							<a class="nav-link" href="{{url_for('index')}}">
+								Home
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{{url_for('city')}}">
+								City
+							</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</header>
+
+		<div class="section" style="margin-top: 100px;">
+			<div class="container">
+				<div class="jumbotron jumbotron-fluid">
+					<div class="row" style="padding-left: 20px;">
+						<div class="container col-md-6">
+							<h1 class="display-4">Weather of the day</h1>
+							{% for weather in weather_data %}
+							<div class="card text-center" style="width: 18rem;">
+								<div class="row no-gutters">
+									<div class="col-md-4">
+										<img src="http://openweathermap.org/img/w/{{ weather.icon }}.png" class="card-img-top" alt="Image">
+									</div>
+									<div class="col-md-8">
+										<div class="card-body">
+											<h5 class="card-title">{{ weather.city }}</h5>
+											<p class="card-text">
+												<h5>{{weather.country}}</h5>
+												<span class="subtitle">{{ weather.temperature }}&deg; C</span>
+												<br><span class="subtitle">{{ weather.humidity }}</span>
+												<br><span class="subtitle">{{ weather.wind }} knot</span>
+												<br> {{ weather.description }}
+											</p>
+										</div>
+									</div>
+								</div>
+								<div class="row no-gutters">
+									<div class="col-md-12">
+										<h6 class="card-title text-center">{{ weather.day }}, {{ weather.date }}</h6><br>
+										<h6 class="card-title text-center" style="margin-top: -25px;">{{ weather.time }}</h6>
+									</div>
+								</div>
+							</div>
+							{% endfor %}
+						</div>
+						<div class="container col-md-6">
+							<h1 class="display-4">Your Location :</h1>
+							{% for geo in geo_data %}
+							<div class="card" style="width: 18rem;">
+								<div class="card-header">
+									<h5 class="card-title">{{ geo.countryName }}</h5>
+								</div>
+								<div class="card-body">
+									<p class="card-text">
+										<span class="subtitle">{{ geo.cityAccess }}</span><br>
+										<span class="subtitle">{{ geo.province }}</span><br>
+										<span class="subtitle">{{ geo.IPAddress }}</span><br>
+									</p>
+								</div>
+							</div>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<section class="section">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="container" style="margin: 10px 10px 10px 10px;">
+						<h5 class="lead text-center"> Temperature Chart </h5>
+						<canvas id="myChart" width="400" height="auto"></canvas>
+						<script>
+							// define the chart data
+							var chartData = {
+								labels : [{% for item in data_chart %}
+								"{{item.hour}}",
+								{% endfor %}],
+								datasets : [{
+									label: 'Data Celcius per Hour',
+									fill: true,
+									lineTension: 0.1,
+									backgroundColor: "rgba(75,192,192,0.4)",
+									borderColor: "rgba(75,192,192,1)",
+									borderCapStyle: 'butt',
+									borderDash: [],
+									borderDashOffset: 0.0,
+									borderJoinStyle: 'miter',
+									pointBorderColor: "rgba(75,192,192,1)",
+									pointBackgroundColor: "#fff",
+									pointBorderWidth: 1,
+									pointHoverRadius: 5,
+									pointHoverBackgroundColor: "rgba(75,192,192,1)",
+									pointHoverBorderColor: "rgba(220,220,220,1)",
+									pointHoverBorderWidth: 2,
+									pointRadius: 1,
+									pointHitRadius: 10,
+									data : [{% for item in data_chart %}
+									{{item.temp}},
+									{% endfor %}],
+									spanGaps: false
+								}]
+							}
+
+							var ctx = document.getElementById('myChart').getContext('2d');
+						// create the chart using the chart canvas
+						var myChart = new Chart(ctx, {
+							type: 'line',
+							data: chartData,
+						});
+					</script>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="container" style="margin: 10px 10px 10px 10px;">
+						<h5 class="lead text-center"> Humidity Chart </h5>
+						<canvas id="myChart2" width="400" height="auto"></canvas>
+						<script>
+							// define the chart data
+							var chartData2 = {
+								labels : [{% for item in data_chart %}
+											"{{item.hour}}",
+										{% endfor %}],
+								datasets : [{
+									label: 'Data Humidity per Hour',
+									fill: true,
+									lineTension: 0.1,
+									backgroundColor: "rgba(75,192,192,0.4)",
+									borderColor: "rgba(75,192,192,1)",
+									borderCapStyle: 'butt',
+									borderDash: [],
+									borderDashOffset: 0.0,
+									borderJoinStyle: 'miter',
+									pointBorderColor: "rgba(75,192,192,1)",
+									pointBackgroundColor: "#fff",
+									pointBorderWidth: 1,
+									pointHoverRadius: 5,
+									pointHoverBackgroundColor: "rgba(75,192,192,1)",
+									pointHoverBorderColor: "rgba(220,220,220,1)",
+									pointHoverBorderWidth: 2,
+									pointRadius: 1,
+									pointHitRadius: 10,
+									data : [{% for item in data_chart %}
+												{{item.hum}},
+											{% endfor %}],
+									spanGaps: false
+								}]
+							}
+
+						var ctx = document.getElementById('myChart2').getContext('2d');
+						// create the chart using the chart canvas
+						var myChart2 = new Chart(ctx, {
+							type: 'line',
+							data: chartData2,
+						});
+					</script>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<footer style="bottom:0; width:100%;">
+		<div class="footer-copyright text-center py-3">
+			© 2019 Copyright: Kelompok TOS | Theme by Kelompok TOS
+		</div>
+	</footer>
+
+	<!-- Optional JavaScript -->
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</body>
+</html>
